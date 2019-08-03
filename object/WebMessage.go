@@ -61,5 +61,4 @@ type JobRecordRequest struct {
 	JobId    string `json:"jobid"`
 	ClientId string `json:"clientid"`
 	JobKey   string `json:"jobkey"`
-	JobCron  string `json:"jobcron"`
 }
