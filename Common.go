@@ -1,6 +1,7 @@
 package goServiceSupportHelper
 
 import (
+	"context"
 	"fmt"
 	"github.com/Deansquirrel/goServiceSupportHelper/global"
 	"github.com/Deansquirrel/goToolCron"
@@ -24,6 +25,8 @@ type Params struct {
 	IsSvrV3         bool
 	SvrV3AppType    string
 	SvrV3ClientType string
+	Ctx             context.Context
+	Cancel          func()
 }
 
 func InitParam(p *Params) {
@@ -33,11 +36,13 @@ func InitParam(p *Params) {
 	global.DbType = p.DbType
 	global.IsSvrV3 = p.IsSvrV3
 	global.DbConfig = p.DbConfig
+	global.Ctx = p.Ctx
+	global.Cancel = p.Cancel
 	go func() {
 		if p.DbConfig == nil {
 			return
 		}
-		refreshDbId(p.DbConfig, p.DbType)
+		refreshDbId(global.DbConfig, global.DbType)
 	}()
 	go refreshHostName()
 	go refreshInternetIp()
@@ -85,17 +90,21 @@ func Start() {
 	}()
 	go func() {
 		for {
-			err := goToolCron.AddFunc(
-				"RefreshFlashInfo",
-				"0 * * * * ?",
-				FormatSSJob("RefreshFlashInfo", jobRefreshFlashInfo),
-				panicHandle)
-			if err != nil {
-				log.Error(err.Error())
+			if global.ClientId == "" {
 				time.Sleep(time.Minute)
 				continue
-			} else {
+			}
+			ip := global.InternetIp
+			err := RefreshFlashInfo(global.ClientId, global.Version, ip)
+			if err != nil {
+				log.Error(err.Error())
+				time.Sleep(time.Minute * 10)
+				continue
+			}
+			if ip != "" {
 				break
+			} else {
+				time.Sleep(time.Minute)
 			}
 		}
 	}()
@@ -104,7 +113,7 @@ func Start() {
 			for {
 				err := goToolCron.AddFunc(
 					"RefreshSvrV3Info",
-					"0 * * * * ?",
+					"0 15/30 * * * ?",
 					FormatSSJob("RefreshSvrV3Info", jobRefreshSvrV3Info),
 					panicHandle)
 				if err != nil {
@@ -230,13 +239,6 @@ func refreshDbId(dbConfig *goToolMSSql.MSSqlConfig, dbType int) {
 
 func panicHandle(v interface{}) {
 	log.Error(fmt.Sprintf("panicHandle: %s", v))
-}
-
-func jobRefreshFlashInfo() {
-	err := RefreshFlashInfo(global.ClientId, global.Version, global.InternetIp)
-	if err != nil {
-		log.Error(err.Error())
-	}
 }
 
 func jobHeartBeatUpdate() {

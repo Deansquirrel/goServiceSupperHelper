@@ -1,6 +1,9 @@
 package global
 
-import "github.com/Deansquirrel/goToolMSSql"
+import (
+	"context"
+	"github.com/Deansquirrel/goToolMSSql"
+)
 
 const (
 	//PreVersion = "0.0.0 Build20190101"
@@ -9,6 +12,8 @@ const (
 	Type    = "ServiceSupportHelper"
 )
 
+var Ctx context.Context
+var Cancel func()
 var DbConfig *goToolMSSql.MSSqlConfig
 
 var (

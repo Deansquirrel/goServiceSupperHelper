@@ -9,9 +9,12 @@ import (
 	"github.com/Deansquirrel/goServiceSupportHelper/object"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
+
+import log "github.com/Deansquirrel/goToolLog"
 
 func HeartBeatUpdate(clientId string) error {
 	if strings.Trim(global.HttpAddress, " ") == "" {
@@ -39,13 +42,23 @@ func HeartBeatUpdate(clientId string) error {
 	if err != nil {
 		return err
 	}
-	var rd object.Response
+	var rd object.HeartBeatResponse
 	err = json.Unmarshal(body, &rd)
 	if err != nil {
 		return err
 	}
 	if rd.ErrCode != 200 {
 		return errors.New(rd.ErrMsg)
+	}
+	if rd.IsForbidden != 0 {
+		go func() {
+			log.Warn(fmt.Sprintf("Forbidden: %s", rd.ForbiddenReason))
+			if global.Cancel != nil {
+				global.Cancel()
+				time.Sleep(time.Minute)
+				os.Exit(0)
+			}
+		}()
 	}
 	return nil
 }

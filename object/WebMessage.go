@@ -57,6 +57,13 @@ type HeartBeatRequest struct {
 	HeartBeatClient time.Time `json:"heartbeatclient"`
 }
 
+type HeartBeatResponse struct {
+	ErrCode         int    `json:"errcode"`
+	ErrMsg          string `json:"errmsg"`
+	IsForbidden     int    `json:"isforbidden"`
+	ForbiddenReason string `json:"forbiddenreason"`
+}
+
 type JobRecordRequest struct {
 	JobId    string `json:"jobid"`
 	ClientId string `json:"clientid"`
