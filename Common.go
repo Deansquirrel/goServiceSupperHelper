@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Deansquirrel/goServiceSupportHelper/global"
+	"github.com/Deansquirrel/goToolCommon"
 	"github.com/Deansquirrel/goToolCron"
 	"github.com/Deansquirrel/goToolEnvironment"
 	"github.com/Deansquirrel/goToolMSSql"
@@ -16,6 +17,14 @@ import (
 import log "github.com/Deansquirrel/goToolLog"
 
 type Params struct {
+	HttpAddress   string
+	ClientType    string
+	ClientVersion string
+	Ctx           context.Context
+	Cancel        func()
+}
+
+type ParamsT struct {
 	HttpAddress   string
 	ClientType    string
 	ClientVersion string
@@ -33,21 +42,26 @@ func InitParam(p *Params) {
 	global.HttpAddress = strings.Trim(p.HttpAddress, " ")
 	global.ClientType = strings.Trim(p.ClientType, " ")
 	global.ClientVersion = strings.Trim(p.ClientVersion, " ")
-	global.DbType = p.DbType
-	global.IsSvrV3 = p.IsSvrV3
-	global.DbConfig = p.DbConfig
 	global.Ctx = p.Ctx
 	global.Cancel = p.Cancel
+
+	go refreshHostName()
+	go refreshInternetIp()
+	go refreshClientId()
+	global.ClientId = getClinetId()
+	global.HasInit = true
+}
+
+func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig, dbType int, isSvrV3 bool) {
+	global.DbConfig = dbConfig
+	global.DbType = dbType
+	global.IsSvrV3 = isSvrV3
 	go func() {
-		if p.DbConfig == nil {
+		if global.DbConfig == nil {
 			return
 		}
 		refreshDbId(global.DbConfig, global.DbType)
 	}()
-	go refreshHostName()
-	go refreshInternetIp()
-	go refreshClientId()
-	global.HasInit = true
 }
 
 func Start() {
@@ -150,6 +164,16 @@ func Start() {
 //	})
 //	go goServiceSupportHelper.Start()
 //}
+
+func getClinetId() string {
+	if global.ClientType == "" {
+		time.Sleep(time.Second * 10)
+		return getClinetId()
+	}
+	biosSn, _ := goToolEnvironment.BIOSSerialNumber()
+	diskSn, _ := goToolEnvironment.DiskDriverSerialNumber()
+	return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn)))
+}
 
 //刷新global.ClientId
 func refreshClientId() {
