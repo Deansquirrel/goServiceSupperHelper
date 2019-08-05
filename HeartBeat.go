@@ -16,12 +16,19 @@ import (
 
 import log "github.com/Deansquirrel/goToolLog"
 
-func HeartBeatUpdate(clientId string) error {
+type heartBeat struct {
+}
+
+func NewHeartBeat() *heartBeat {
+	return &heartBeat{}
+}
+
+func (ht *heartBeat) HeartBeatUpdate() error {
 	if strings.Trim(global.HttpAddress, " ") == "" {
 		return errors.New("HttpAddress is empty")
 	}
 	d := object.HeartBeatRequest{
-		ClientId:        clientId,
+		ClientId:        global.ClientId,
 		HeartBeatClient: time.Now(),
 	}
 	bd, err := json.Marshal(d)

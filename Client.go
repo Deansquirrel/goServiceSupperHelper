@@ -13,60 +13,34 @@ import (
 	"time"
 )
 
-func GetClientId(clientType string, hostName string, dbId int, dbName string) (string, error) {
-	if strings.Trim(global.HttpAddress, " ") == "" {
-		return "", errors.New("HttpAddress is empty")
-	}
-	d := object.ClientIdRequest{
-		ClientType: clientType,
-		HostName:   hostName,
-		DbId:       dbId,
-		DbName:     dbName,
-	}
-	bd, err := json.Marshal(d)
-	if err != nil {
-		return "", err
-	}
-	resp, err := http.Post(
-		fmt.Sprintf("%s/client/id", global.HttpAddress),
-		"application/json",
-		bytes.NewReader(bd))
-	if err != nil {
-		return "", err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	var rd object.ClientIdResponse
-	err = json.Unmarshal(body, &rd)
-	if err != nil {
-		return "", err
-	}
-	if rd.ErrCode != 200 {
-		return "", errors.New(rd.ErrMsg)
-	}
-	return rd.Id, nil
+type client struct {
 }
 
-func RefreshFlashInfo(clientId string, clientVersion string, internetIp string) error {
+func NewClient() *client {
+	return &client{}
+}
+
+func (c *client) RefreshClientInfo(
+	clientId string, clientType string, clientVersion string, hostName string, dbId int,
+	dbName string, internetIP string) error {
 	if strings.Trim(global.HttpAddress, " ") == "" {
 		return errors.New("HttpAddress is empty")
 	}
-	d := object.ClientFlashInfoRequest{
+	d := object.ClientInfoRequest{
 		ClientId:      clientId,
+		ClientType:    clientType,
 		ClientVersion: clientVersion,
-		InternetIP:    internetIp,
+		HostName:      hostName,
+		DbId:          dbId,
+		DbName:        dbName,
+		InternetIP:    internetIP,
 	}
 	bd, err := json.Marshal(d)
 	if err != nil {
 		return err
 	}
 	resp, err := http.Post(
-		fmt.Sprintf("%s/client/flash", global.HttpAddress),
+		fmt.Sprintf("%s/client/info", global.HttpAddress),
 		"application/json",
 		bytes.NewReader(bd))
 	if err != nil {
@@ -90,7 +64,7 @@ func RefreshFlashInfo(clientId string, clientVersion string, internetIp string) 
 	return nil
 }
 
-func RefreshSvrV3Info(
+func (c *client) RefreshSvrV3Info(
 	clientId string,
 	coId int, coAb string, coCode string, coUserAb string, coUserCode string, coFunc int,
 	svName string, svVer string, svDate time.Time) error {

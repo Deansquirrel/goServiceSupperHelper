@@ -13,28 +13,35 @@ import (
 	"strings"
 )
 
-func FormatSSJob(jobKey string, cmd func()) func() {
+type job struct {
+}
+
+func NewJob() *job {
+	return &job{}
+}
+
+func (j *job) newJobId() string {
+	return strings.Replace(goToolCommon.Guid(), "-", "", -1)
+}
+
+func (j *job) FormatSSJob(jobKey string, cmd func()) func() {
 	return func() {
-		jobId := NewJobId()
-		_ = JobRecordStart(jobId, global.ClientId, jobKey)
+		jobId := j.newJobId()
+		_ = j.jobRecordStart(jobKey, jobId)
 		defer func() {
-			_ = JobRecordEnd(jobId, global.ClientId, jobKey)
+			_ = j.jobRecordEnd(jobKey, jobId)
 		}()
 		cmd()
 	}
 }
 
-func NewJobId() string {
-	return strings.Replace(goToolCommon.Guid(), "-", "", -1)
-}
-
-func JobRecordStart(jobId, clientId, jobKey string) error {
+func (j *job) jobRecordStart(jobKey, jobId string) error {
 	if strings.Trim(global.HttpAddress, " ") == "" {
 		return errors.New("HttpAddress is empty")
 	}
 	d := object.JobRecordRequest{
 		JobId:    jobId,
-		ClientId: clientId,
+		ClientId: global.ClientId,
 		JobKey:   jobKey,
 	}
 	bd, err := json.Marshal(d)
@@ -66,13 +73,13 @@ func JobRecordStart(jobId, clientId, jobKey string) error {
 	return nil
 }
 
-func JobRecordEnd(jobId, clientId, jobKey string) error {
+func (j *job) jobRecordEnd(jobKey, jobId string) error {
 	if strings.Trim(global.HttpAddress, " ") == "" {
 		return errors.New("HttpAddress is empty")
 	}
 	d := object.JobRecordRequest{
 		JobId:    jobId,
-		ClientId: clientId,
+		ClientId: global.ClientId,
 		JobKey:   jobKey,
 	}
 	bd, err := json.Marshal(d)

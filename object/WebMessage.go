@@ -19,24 +19,21 @@ type TypeResponse struct {
 	Type    string `json:"type"`
 }
 
-type ClientIdRequest struct {
-	ClientType string `json:"clienttype"`
-	HostName   string `json:"hostname"`
-	DbId       int    `json:"dbid"`
-	DbName     string `json:"dbname"`
-}
-
-type ClientIdResponse struct {
-	ErrCode int    `json:"errcode"`
-	ErrMsg  string `json:"errmsg"`
-	Id      string `json:"id"`
-}
-
-type ClientFlashInfoRequest struct {
+type ClientInfoRequest struct {
 	ClientId      string `json:"clientid"`
+	ClientType    string `json:"clienttype"`
 	ClientVersion string `json:"clientversion"`
+	HostName      string `json:"hostname"`
+	DbId          int    `json:"dbid"`
+	DbName        string `json:"dbname"`
 	InternetIP    string `json:"internetip"`
 }
+
+//type ClientIdResponse struct {
+//	ErrCode int    `json:"errcode"`
+//	ErrMsg  string `json:"errmsg"`
+//	Id      string `json:"id"`
+//}
 
 type SvrV3InfoRequest struct {
 	ClientId   string `json:"clientid"`
@@ -60,7 +57,7 @@ type HeartBeatRequest struct {
 type HeartBeatResponse struct {
 	ErrCode         int    `json:"errcode"`
 	ErrMsg          string `json:"errmsg"`
-	IsForbidden     int    `json:"isforbidden"`
+	IsForbidden     int    `json:"Isforbidden"`
 	ForbiddenReason string `json:"forbiddenreason"`
 }
 
