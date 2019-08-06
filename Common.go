@@ -121,7 +121,7 @@ func refreshHostName() {
 		}
 		global.HostName = hostName
 		refreshClientInfo()
-		return
+		break
 	}
 }
 
@@ -143,6 +143,7 @@ func refreshClientInfo() {
 			time.Sleep(time.Minute)
 			continue
 		}
+		break
 	}
 }
 
