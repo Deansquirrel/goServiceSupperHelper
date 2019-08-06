@@ -66,6 +66,14 @@ func SetRefreshSvrV3InfoCron(spec string) {
 	}
 }
 
+func GetVersion() string {
+	return global.Version
+}
+
+func GetType() string {
+	return global.Type
+}
+
 func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 	dbType int,
 	isSvrV3 bool) {
