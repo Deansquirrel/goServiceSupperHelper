@@ -52,6 +52,20 @@ func InitParam(p *Params) {
 	go refreshInternetIp()
 }
 
+func SetHeartBeatCron(spec string) {
+	spec = strings.Trim(spec, " ")
+	if spec != "" {
+		global.HeartBeatCron = spec
+	}
+}
+
+func SetRefreshSvrV3InfoCron(spec string) {
+	spec = strings.Trim(spec, " ")
+	if spec != "" {
+		global.RefreshSvrV3InfoCron = spec
+	}
+}
+
 func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 	dbType int,
 	isSvrV3 bool) {
