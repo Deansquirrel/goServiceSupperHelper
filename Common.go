@@ -83,7 +83,6 @@ func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 		if global.DbConfig == nil {
 			return
 		}
-		go refreshClientInfo()
 		go refreshDbId(global.DbConfig, global.DbType)
 		global.IsSvrV3 = isSvrV3
 		if global.IsSvrV3 {

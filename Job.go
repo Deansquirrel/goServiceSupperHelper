@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type job struct {
@@ -26,6 +27,7 @@ func (j *job) newJobId() string {
 
 func (j *job) FormatSSJob(jobKey string, cmd func()) func() {
 	return func() {
+		time.Sleep(goToolCommon.GetDurationByMillisecond(goToolCommon.RandInt(0, 500)))
 		jobId := j.newJobId()
 		_ = j.jobRecordStart(jobKey, jobId)
 		defer func() {
