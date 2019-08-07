@@ -32,6 +32,8 @@ func InitParam(p *Params) {
 	global.Cancel = p.Cancel
 	global.ClientId = getClientId()
 
+	waitForClientId()
+
 	//HeartBeat
 	go func() {
 		for {
@@ -77,6 +79,7 @@ func GetType() string {
 func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 	dbType int,
 	isSvrV3 bool) {
+	waitForClientId()
 	global.DbConfig = dbConfig
 	global.DbType = dbType
 	go func() {
@@ -109,17 +112,20 @@ func panicHandle(v interface{}) {
 }
 
 func getClientId() string {
-	if global.ClientType == "" {
-		time.Sleep(time.Second * 10)
-		return getClientId()
+	for {
+		if global.ClientType == "" {
+			time.Sleep(time.Second * 10)
+			continue
+		}
+		biosSn, _ := goToolEnvironment.BIOSSerialNumber()
+		diskSn, _ := goToolEnvironment.DiskDriverSerialNumber()
+		return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn)))
 	}
-	biosSn, _ := goToolEnvironment.BIOSSerialNumber()
-	diskSn, _ := goToolEnvironment.DiskDriverSerialNumber()
-	return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn)))
 }
 
 //刷新global.InternetIp
 func refreshInternetIp() {
+	waitForClientId()
 	for {
 		ip, err := goToolEnvironment.GetInternetAddr()
 		if err != nil {
@@ -134,6 +140,7 @@ func refreshInternetIp() {
 
 //刷新global.HostName
 func refreshHostName() {
+	waitForClientId()
 	for {
 		hostName, err := goToolEnvironment.GetHostName()
 		if err != nil {
@@ -147,6 +154,7 @@ func refreshHostName() {
 }
 
 func refreshClientInfo() {
+	waitForClientId()
 	for {
 		dbName := ""
 		if global.DbConfig != nil {
@@ -170,6 +178,7 @@ func refreshClientInfo() {
 
 //刷新global.DbId
 func refreshDbId(dbConfig *goToolMSSql.MSSqlConfig, dbType int) {
+	waitForClientId()
 root:
 	for {
 		switch dbType {
@@ -199,6 +208,7 @@ root:
 }
 
 func jobHeartBeat() {
+	waitForClientId()
 	err := NewHeartBeat().HeartBeatUpdate()
 	if err != nil {
 		log.Error(err.Error())
@@ -207,6 +217,7 @@ func jobHeartBeat() {
 }
 
 func jobRefreshSvrV3Info() {
+	waitForClientId()
 	coId, coAb, coCode, coUserAb, coUserCode, coFunc, err :=
 		goToolSVRV3.GetZlCompany(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
 	if err != nil {
@@ -225,5 +236,15 @@ func jobRefreshSvrV3Info() {
 	if err != nil {
 		log.Error(err.Error())
 		return
+	}
+}
+
+func waitForClientId() {
+	for {
+		if global.ClientId == "" {
+			time.Sleep(time.Second)
+			continue
+		}
+		break
 	}
 }
