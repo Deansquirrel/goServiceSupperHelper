@@ -38,9 +38,9 @@ func InitParam(p *Params) {
 	go func() {
 		for {
 			err := goToolCron.AddFunc(
-				"heartbeat",
+				"HeartBeat",
 				global.HeartBeatCron,
-				NewJob().FormatSSJob("heartbeat", jobHeartBeat),
+				NewJob().FormatSSJob("HeartBeat", jobHeartBeat),
 				panicHandle)
 			if err == nil {
 				break
@@ -92,9 +92,9 @@ func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 			go func() {
 				for {
 					err := goToolCron.AddFunc(
-						"refreshSvrV3Info",
+						"RefreshSvrV3Info",
 						global.RefreshSvrV3InfoCron,
-						NewJob().FormatSSJob("refreshSvrV3Info", jobRefreshSvrV3Info),
+						NewJob().FormatSSJob("RefreshSvrV3Info", jobRefreshSvrV3Info),
 						panicHandle)
 					if err == nil {
 						break
@@ -119,7 +119,8 @@ func getClientId() string {
 		}
 		biosSn, _ := goToolEnvironment.BIOSSerialNumber()
 		diskSn, _ := goToolEnvironment.DiskDriverSerialNumber()
-		return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn)))
+		currPath, _ := goToolCommon.GetCurrPath()
+		return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn + currPath)))
 	}
 }
 
