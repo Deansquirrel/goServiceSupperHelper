@@ -112,3 +112,5 @@ func (j *job) jobRecordEnd(jobKey, jobId string) error {
 	}
 	return nil
 }
+
+//TODO 增加错误记录接口封装，支持对接应用提交错误记录
