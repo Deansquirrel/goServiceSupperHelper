@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/Deansquirrel/goServiceSupportHelper/global"
-	"github.com/Deansquirrel/goToolCommon"
 	"github.com/Deansquirrel/goToolCron"
 	"github.com/Deansquirrel/goToolEnvironment"
 	"github.com/Deansquirrel/goToolMSSql"
@@ -114,13 +113,17 @@ func panicHandle(v interface{}) {
 func getClientId() string {
 	for {
 		if global.ClientType == "" {
+			log.Warn("client type can not be empty")
 			time.Sleep(time.Second * 10)
 			continue
 		}
-		biosSn, _ := goToolEnvironment.BIOSSerialNumber()
-		diskSn, _ := goToolEnvironment.DiskDriverSerialNumber()
-		currPath, _ := goToolCommon.GetCurrPath()
-		return strings.ToUpper(goToolCommon.Md5([]byte(global.ClientType + biosSn + diskSn + currPath)))
+		id, err := goToolEnvironment.GetClientId(global.ClientType)
+		if err != nil {
+			log.Warn(fmt.Sprintf("get client id err: %s", err.Error()))
+			time.Sleep(time.Second * 10)
+			continue
+		}
+		return id
 	}
 }
 
