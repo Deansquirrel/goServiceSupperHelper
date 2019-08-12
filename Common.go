@@ -211,26 +211,30 @@ root:
 	refreshClientInfo()
 }
 
-func jobHeartBeat() {
+func jobHeartBeat(id string) {
 	waitForClientId()
 	err := NewHeartBeat().HeartBeatUpdate()
 	if err != nil {
 		log.Error(err.Error())
+		err = JobErrRecord(id, err.Error())
+		if err != nil {
+			log.Error(fmt.Sprintf("record err err: %s", err.Error()))
+		}
 	}
 	return
 }
 
-func jobRefreshSvrV3Info() {
+func jobRefreshSvrV3Info(id string) {
 	waitForClientId()
 	coId, coAb, coCode, coUserAb, coUserCode, coFunc, err :=
 		goToolSVRV3.GetZlCompany(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
 	if err != nil {
-		log.Error(err.Error())
+		jobRefreshSvrV3InfoHandleErr(id, err)
 		return
 	}
 	svName, svVer, svDate, err := goToolSVRV3.GetXtSelfVer(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
 	if err != nil {
-		log.Error(err.Error())
+		jobRefreshSvrV3InfoHandleErr(id, err)
 		return
 	}
 	err = NewClient().RefreshSvrV3Info(
@@ -238,8 +242,16 @@ func jobRefreshSvrV3Info() {
 		coId, coAb, coCode, coUserAb, coUserCode, coFunc,
 		svName, svVer, svDate)
 	if err != nil {
-		log.Error(err.Error())
+		jobRefreshSvrV3InfoHandleErr(id, err)
 		return
+	}
+}
+
+func jobRefreshSvrV3InfoHandleErr(id string, err error) {
+	log.Error(err.Error())
+	err = JobErrRecord(id, err.Error())
+	if err != nil {
+		log.Error(fmt.Sprintf("record err err: %s", err.Error()))
 	}
 }
 

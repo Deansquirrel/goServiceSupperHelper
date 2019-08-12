@@ -66,3 +66,9 @@ type JobRecordRequest struct {
 	ClientId string `json:"clientid"`
 	JobKey   string `json:"jobkey"`
 }
+
+type JobErrRecordRequest struct {
+	JobId     string    `json:"jobid"`
+	ErrMsg    string    `json:"errmsg"`
+	OccurTime time.Time `json:"occurtime"`
+}
