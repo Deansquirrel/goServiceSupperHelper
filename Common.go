@@ -75,35 +75,44 @@ func GetType() string {
 	return global.Type
 }
 
+type SvrType string
+
+const (
+	SVRNONE SvrType = "svrNone"
+	SVRV3   SvrType = "svrV3"
+	SVRZ5   SvrType = "svrZ5"
+)
+
 func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 	dbType int,
-	isSvrV3 bool) {
+	svrType SvrType) {
 	waitForClientId()
 	global.DbConfig = dbConfig
 	global.DbType = dbType
-	go func() {
-		if global.DbConfig == nil {
-			return
-		}
-		go refreshDbId(global.DbConfig, global.DbType)
-		global.IsSvrV3 = isSvrV3
-		if global.IsSvrV3 {
-			go func() {
-				for {
-					err := goToolCron.AddFunc(
-						"RefreshSvrV3Info",
-						global.RefreshSvrV3InfoCron,
-						NewJob().FormatSSJob("RefreshSvrV3Info", jobRefreshSvrV3Info),
-						panicHandle)
-					if err == nil {
-						break
-					} else {
-						time.Sleep(time.Second * 10)
-					}
+
+	if global.DbConfig == nil {
+		return
+	}
+	go refreshDbId(global.DbConfig, global.DbType)
+	switch svrType {
+	case SVRV3:
+		go func() {
+			for {
+				err := goToolCron.AddFunc(
+					"RefreshSvrV3Info",
+					global.RefreshSvrV3InfoCron,
+					NewJob().FormatSSJob("RefreshSvrV3Info", jobRefreshSvrV3Info),
+					panicHandle)
+				if err == nil {
+					break
+				} else {
+					time.Sleep(time.Second * 10)
 				}
-			}()
-		}
-	}()
+			}
+		}()
+	default:
+		log.Warn(fmt.Sprintf("unexpected type: %s", string(svrType)))
+	}
 }
 
 func panicHandle(v interface{}) {

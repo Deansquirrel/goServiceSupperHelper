@@ -111,3 +111,10 @@ func (c *client) RefreshSvrV3Info(
 	}
 	return nil
 }
+
+func (c *client) RefreshSvrZ5ZlVersion(
+	clientId string,
+	objectName string, objectType string, objectVersion string, objectDate time.Time) error {
+	//TODO
+	return nil
+}
