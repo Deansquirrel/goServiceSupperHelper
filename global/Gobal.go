@@ -30,5 +30,4 @@ var (
 	InternetIp    = ""
 	DbId          = -1
 	DbType        = -1
-	IsSvrV3       = false
 )
