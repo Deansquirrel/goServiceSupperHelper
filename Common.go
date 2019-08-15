@@ -9,6 +9,8 @@ import (
 	"github.com/Deansquirrel/goToolMSSql"
 	"github.com/Deansquirrel/goToolMSSqlHelper"
 	"github.com/Deansquirrel/goToolSVRV3"
+	"github.com/Deansquirrel/goToolSVRZ5"
+	"github.com/kataras/iris/core/errors"
 	"strings"
 	"time"
 )
@@ -60,10 +62,10 @@ func SetHeartBeatCron(spec string) {
 	}
 }
 
-func SetRefreshSvrV3InfoCron(spec string) {
+func SetRefreshSvrInfoCron(spec string) {
 	spec = strings.Trim(spec, " ")
 	if spec != "" {
-		global.RefreshSvrV3InfoCron = spec
+		global.RefreshSvrInfoCron = spec
 	}
 }
 
@@ -100,8 +102,37 @@ func SetOtherInfo(dbConfig *goToolMSSql.MSSqlConfig,
 			for {
 				err := goToolCron.AddFunc(
 					"RefreshSvrV3Info",
-					global.RefreshSvrV3InfoCron,
+					global.RefreshSvrInfoCron,
 					NewJob().FormatSSJob("RefreshSvrV3Info", jobRefreshSvrV3Info),
+					panicHandle)
+				if err == nil {
+					break
+				} else {
+					time.Sleep(time.Second * 10)
+				}
+			}
+		}()
+	case SVRZ5:
+		go func() {
+			for {
+				err := goToolCron.AddFunc(
+					"RefreshSvrZ5ZlVersion",
+					global.RefreshSvrInfoCron,
+					NewJob().FormatSSJob("RefreshSvrZ5ZlVersion", jobRefreshSvrZ5ZlVersion),
+					panicHandle)
+				if err == nil {
+					break
+				} else {
+					time.Sleep(time.Second * 10)
+				}
+			}
+		}()
+		go func() {
+			for {
+				err := goToolCron.AddFunc(
+					"RefreshSvrZ5ZlCompany",
+					global.RefreshSvrInfoCron,
+					NewJob().FormatSSJob("RefreshSvrZ5ZlCompany", jobRefreshSvrZ5ZlCompany),
 					panicHandle)
 				if err == nil {
 					break
@@ -233,17 +264,58 @@ func jobHeartBeat(id string) {
 	return
 }
 
+func jobRefreshSvrZ5ZlVersion(id string) {
+	waitForClientId()
+	vList, err := goToolSVRZ5.GetZlVersion(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
+	if err != nil {
+		jobHandleErr(id, err)
+		return
+	}
+	if vList == nil {
+		jobHandleErr(id, errors.New(fmt.Sprintf("SvrZ5 ZlVersion list is nil")))
+		return
+	}
+	client := NewClient()
+	for _, v := range vList {
+		err = client.RefreshSvrZ5ZlVersion(global.ClientId,
+			v.ObjectName, v.ObjectType, v.ObjectVersion, v.ObjectDate)
+		if err != nil {
+			jobHandleErr(id, err)
+			return
+		}
+	}
+}
+
+func jobRefreshSvrZ5ZlCompany(id string) {
+	waitForClientId()
+	z, err := goToolSVRZ5.GetZlCompany(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
+	if err != nil {
+		jobHandleErr(id, err)
+		return
+	}
+	if z == nil {
+		jobHandleErr(id, errors.New("zlCompany return nil"))
+		return
+	}
+	err = NewClient().RefreshSvrZ5ZlCompany(global.ClientId,
+		z.CoId, z.CoAb, z.CoCode, z.CoType, z.CoUserAb, z.CoUserCode, z.CoAccCrDate)
+	if err != nil {
+		jobHandleErr(id, err)
+		return
+	}
+}
+
 func jobRefreshSvrV3Info(id string) {
 	waitForClientId()
 	coId, coAb, coCode, coUserAb, coUserCode, coFunc, err :=
 		goToolSVRV3.GetZlCompany(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
 	if err != nil {
-		jobRefreshSvrV3InfoHandleErr(id, err)
+		jobHandleErr(id, err)
 		return
 	}
 	svName, svVer, svDate, err := goToolSVRV3.GetXtSelfVer(goToolMSSqlHelper.ConvertDbConfigTo2000(global.DbConfig))
 	if err != nil {
-		jobRefreshSvrV3InfoHandleErr(id, err)
+		jobHandleErr(id, err)
 		return
 	}
 	err = NewClient().RefreshSvrV3Info(
@@ -251,12 +323,12 @@ func jobRefreshSvrV3Info(id string) {
 		coId, coAb, coCode, coUserAb, coUserCode, coFunc,
 		svName, svVer, svDate)
 	if err != nil {
-		jobRefreshSvrV3InfoHandleErr(id, err)
+		jobHandleErr(id, err)
 		return
 	}
 }
 
-func jobRefreshSvrV3InfoHandleErr(id string, err error) {
+func jobHandleErr(id string, err error) {
 	log.Error(err.Error())
 	err = JobErrRecord(id, err.Error())
 	if err != nil {

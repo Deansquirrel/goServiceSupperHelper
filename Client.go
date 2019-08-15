@@ -115,6 +115,86 @@ func (c *client) RefreshSvrV3Info(
 func (c *client) RefreshSvrZ5ZlVersion(
 	clientId string,
 	objectName string, objectType string, objectVersion string, objectDate time.Time) error {
-	//TODO
+	if strings.Trim(global.HttpAddress, " ") == "" {
+		return errors.New("HttpAddress is empty")
+	}
+	d := object.SvrZ5ZlVersionRequest{
+		ClientId:      clientId,
+		ObjectName:    objectName,
+		ObjectType:    objectType,
+		ObjectVersion: objectVersion,
+		ObjectDate:    objectDate,
+	}
+	bd, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post(
+		fmt.Sprintf("%s/client/svrz5zlversion", global.HttpAddress),
+		"application/json",
+		bytes.NewReader(bd))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var rd object.Response
+	err = json.Unmarshal(body, &rd)
+	if err != nil {
+		return err
+	}
+	if rd.ErrCode != 200 {
+		return errors.New(rd.ErrMsg)
+	}
+	return nil
+}
+
+func (c *client) RefreshSvrZ5ZlCompany(
+	clientId string,
+	coId int, coAb string, coCode string, coType int, coUserAb string, coUserCode string, coAccCrDate time.Time) error {
+	if strings.Trim(global.HttpAddress, " ") == "" {
+		return errors.New("HttpAddress is empty")
+	}
+	d := object.SvrZ5ZlCompanyRequest{
+		ClientId:    clientId,
+		CoId:        coId,
+		CoAb:        coAb,
+		CoCode:      coCode,
+		CoType:      coType,
+		CoUserAb:    coUserAb,
+		CoUserCode:  coUserCode,
+		CoAccCrDate: coAccCrDate,
+	}
+	bd, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post(
+		fmt.Sprintf("%s/client/svrz5zlcompany", global.HttpAddress),
+		"application/json",
+		bytes.NewReader(bd))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var rd object.Response
+	err = json.Unmarshal(body, &rd)
+	if err != nil {
+		return err
+	}
+	if rd.ErrCode != 200 {
+		return errors.New(rd.ErrMsg)
+	}
 	return nil
 }

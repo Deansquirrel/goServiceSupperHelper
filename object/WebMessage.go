@@ -72,3 +72,22 @@ type JobErrRecordRequest struct {
 	ErrMsg    string    `json:"errmsg"`
 	OccurTime time.Time `json:"occurtime"`
 }
+
+type SvrZ5ZlVersionRequest struct {
+	ClientId      string    `json:"clientid"`
+	ObjectName    string    `json:"objectname"`
+	ObjectType    string    `json:"objecttype"`
+	ObjectVersion string    `json:"objectversion"`
+	ObjectDate    time.Time `json:"objectdate"`
+}
+
+type SvrZ5ZlCompanyRequest struct {
+	ClientId    string    `json:"clientid"`
+	CoId        int       `json:"coid"`
+	CoAb        string    `json:"coab"`
+	CoCode      string    `json:"cocode"`
+	CoType      int       `json:"cotype"`
+	CoUserAb    string    `json:"couserab"`
+	CoUserCode  string    `json:"cousercode"`
+	CoAccCrDate time.Time `json:"coacccrdate"`
+}

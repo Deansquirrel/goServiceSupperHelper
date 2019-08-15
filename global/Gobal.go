@@ -8,13 +8,13 @@ import (
 const (
 	//PreVersion = "1.0.3 Build20190812"
 	//TestVersion = "0.0.0 Build20190101"
-	Version = "0.0.0 Build20190101"
+	Version = "1.0.4 Build20190815"
 	Type    = "ServiceSupportHelper"
 )
 
 var (
-	HeartBeatCron        = "0 * * * * ?"
-	RefreshSvrV3InfoCron = "0 0/5 * * * ?"
+	HeartBeatCron      = "0 * * * * ?"
+	RefreshSvrInfoCron = "0 0/5 * * * ?"
 )
 
 var Ctx context.Context
