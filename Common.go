@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Deansquirrel/goServiceSupportHelper/global"
+	"github.com/Deansquirrel/goToolCommon"
 	"github.com/Deansquirrel/goToolCron"
 	"github.com/Deansquirrel/goToolEnvironment"
 	"github.com/Deansquirrel/goToolMSSql"
@@ -151,20 +152,34 @@ func panicHandle(v interface{}) {
 }
 
 func getClientId() string {
-	for {
-		if global.ClientType == "" {
-			log.Warn("client type can not be empty")
-			time.Sleep(time.Second * 10)
-			continue
-		}
-		id, err := goToolEnvironment.GetClientId(global.ClientType)
+	if global.ClientType == "" {
+		id := getLocalClientId()
+		errMsg := fmt.Sprintf("client type can not be empty,temp Id: %s", id)
+		log.Warn(errMsg)
+		err := JobErrRecord("GetClientId", errMsg)
 		if err != nil {
-			log.Warn(fmt.Sprintf("get client id err: %s", err.Error()))
-			time.Sleep(time.Second * 10)
-			continue
+			log.Error(err.Error())
 		}
 		return id
 	}
+	id, err := goToolEnvironment.GetClientId(global.ClientType)
+	if err != nil {
+		id := getLocalClientId()
+		errMsg := fmt.Sprintf("get client id err: %s,temp Id: %s", err.Error(), id)
+		log.Warn(errMsg)
+		err := JobErrRecord("GetClientId", errMsg)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return id
+	}
+	return id
+}
+
+func getLocalClientId() string {
+	u := goToolCommon.Guid()
+	u = strings.Replace(u, "-", "", -1)
+	return strings.ToUpper(u)
 }
 
 //刷新global.InternetIp
