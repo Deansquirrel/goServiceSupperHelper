@@ -153,25 +153,25 @@ func panicHandle(v interface{}) {
 
 func getClientId() string {
 	if global.ClientType == "" {
-		id := getLocalClientId()
-		errMsg := fmt.Sprintf("client type can not be empty,temp Id: %s", id)
+		localId := getLocalClientId()
+		errMsg := fmt.Sprintf("client type can not be empty,temp Id: %s", localId)
 		log.Warn(errMsg)
 		err := JobErrRecord("GetClientId", errMsg)
 		if err != nil {
 			log.Error(err.Error())
 		}
-		return id
+		return localId
 	}
 	id, err := goToolEnvironment.GetClientId(global.ClientType)
 	if err != nil {
-		id := getLocalClientId()
-		errMsg := fmt.Sprintf("get client id err: %s,temp Id: %s", err.Error(), id)
+		localId := getLocalClientId()
+		errMsg := fmt.Sprintf("get client id err: %s,temp Id: %s", err.Error(), localId)
 		log.Warn(errMsg)
 		err := JobErrRecord("GetClientId", errMsg)
 		if err != nil {
 			log.Error(err.Error())
 		}
-		return id
+		return localId
 	}
 	return id
 }
