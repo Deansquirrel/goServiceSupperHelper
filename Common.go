@@ -156,7 +156,7 @@ func getClientId() string {
 		localId := getLocalClientId()
 		errMsg := fmt.Sprintf("client type can not be empty,temp Id: %s", localId)
 		log.Warn(errMsg)
-		err := JobErrRecord("GetClientId", errMsg)
+		err := JobErrRecord(getLocalClientId(), errMsg)
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -167,7 +167,7 @@ func getClientId() string {
 		localId := getLocalClientId()
 		errMsg := fmt.Sprintf("get client id err: %s,temp Id: %s", err.Error(), localId)
 		log.Warn(errMsg)
-		err := JobErrRecord("GetClientId", errMsg)
+		err := JobErrRecord(getLocalClientId(), errMsg)
 		if err != nil {
 			log.Error(err.Error())
 		}
